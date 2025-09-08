@@ -45,6 +45,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
+                    "/",
                     "/auth/**",
                     "/.well-known/**",
                     "/health",
