@@ -9,7 +9,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -21,7 +21,7 @@
             padding: 2.5rem;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             text-align: center;
-            max-width: 600px;
+            max-width: 800px;
             width: 90%;
         }
         .success-icon {
@@ -63,6 +63,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 0.75rem 0;
+            gap: 10px;
             border-bottom: 1px solid #e2e8f0;
         }
         .info-row:last-child {
@@ -90,6 +91,7 @@
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
+            white-space: nowrap;
             font-weight: 500;
         }
         .features {
@@ -158,6 +160,11 @@
             color: #9ca3af;
             font-size: 0.9rem;
         }
+        .flex-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
     </style>
 </head>
 <body>
@@ -168,7 +175,8 @@
             <span class="linkedin-icon">💼</span>
             You have successfully authenticated using your LinkedIn account
         </p>
-        
+        <div class="flex-row">
+
         <div class="user-info">
             <h3>Your Account Information</h3>
             <div class="info-row">
@@ -205,6 +213,7 @@
                 <li>Email verification and security features</li>
             </ul>
         </div>
+    </div>
 
         <div class="action-buttons">
             <button class="btn btn-primary" onclick="continueToApp()">Continue to Application</button>
@@ -217,11 +226,26 @@
             Session expires in <span th:text="${tokenExpiryMinutes}">15</span> minutes.
         </div>
     </div>
-
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var currentUser = {
+            name: '[[${user.firstName}]] [[${user.lastName}]]',
+            email: '[[${user.email}]]',
+            provider: '[[${user.provider}]]',
+            verified: '[[${user.emailVerified}]]',
+            redirectUrl: '[[${redirectUrl}]]'
+        };
+        /*]]>*/
+    </script>
+    
     <script>
         function continueToApp() {
-            // Redirect to main application or dashboard
-            window.location.href = '/dashboard';
+            // Redirect to main application or dashboard if redirectUrl is provided
+            if (currentUser.redirectUrl) {
+                window.location.href = currentUser.redirectUrl;
+            } else {
+                window.location.href = '/dashboard';
+            }
         }
         
         function closeWindow() {
@@ -230,10 +254,11 @@
                 window.opener.postMessage({
                     type: 'OAUTH_SUCCESS',
                     user: {
-                        name: '[[${user.firstName}]] [[${user.lastName}]]',
-                        email: '[[${user.email}]]',
-                        provider: '[[${user.provider}]]',
-                        verified: '[[${user.emailVerified}]]'
+                        name: currentUser.name,
+                        email: currentUser.email,
+                        provider: currentUser.provider,
+                        verified: currentUser.verified,
+                        redirectUrl: currentUser.redirectUrl
                     }
                 }, '*');
                 window.close();

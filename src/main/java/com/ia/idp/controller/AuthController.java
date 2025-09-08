@@ -88,7 +88,7 @@ public class AuthController {
      * @return AuthResponse with JWT tokens and user information
      */
     @PostMapping("/login")
-    public ResponseEntity login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
             logger.info("Login request received for email: {}", request.getEmail());
             AuthResponse response = authenticationService.login(request);
@@ -146,14 +146,11 @@ public class AuthController {
      * TOKEN REFRESH SECTION
      * 
      * Refreshes expired JWT access tokens using valid refresh tokens.
-     * Issues new access and refresh tokens (refresh token rotation).
-     * Validates refresh token and revokes old tokens for security.
-     * 
      * @param request RefreshTokenRequest containing the refresh token
      * @return AuthResponse with new JWT access and refresh tokens
      */
     @PostMapping("/refresh")
-    public ResponseEntity refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         try {
             logger.info("Token refresh request received");
             AuthResponse response = authenticationService.refreshToken(request);
@@ -174,7 +171,7 @@ public class AuthController {
      * @return Success response confirming logout
      */
     @PostMapping("/logout")
-    public ResponseEntity logout(@Valid @RequestBody LogoutRequest request) {
+    public ResponseEntity<?> logout(@Valid @RequestBody LogoutRequest request) {
         try {
             logger.info("Logout request received");
             authenticationService.logout(request.getRefreshToken());
@@ -195,7 +192,7 @@ public class AuthController {
      * @return Success response confirming logout from all devices
      */
     @PostMapping("/logout-all")
-    public ResponseEntity logoutAll(@Valid @RequestBody LogoutRequest request) {
+    public ResponseEntity<?> logoutAll(@Valid @RequestBody LogoutRequest request) {
         try {
             logger.info("Logout all devices request received");
             authenticationService.logoutAll(request.getRefreshToken());
@@ -216,7 +213,7 @@ public class AuthController {
      * @return Success/failure response with verification status
      */
     @GetMapping("/verify-email")
-    public ResponseEntity verifyEmail(@RequestParam("token") String token) {
+    public ResponseEntity<?> verifyEmail(@RequestParam("token") String token) {
         try {
             logger.info("Email verification request received");
             boolean verified = authenticationService.verifyEmail(token);
@@ -289,6 +286,7 @@ public class AuthController {
                 .build();
         }
     }
+    
 
     /**
      * OAUTH 2.0 AUTHORIZATION ENDPOINT

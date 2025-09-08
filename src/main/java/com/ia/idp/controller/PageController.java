@@ -16,7 +16,10 @@ public class PageController {
         if (userObj instanceof User) {
             User user = (User) userObj;
             model.addAttribute("user", user);
+            
+            model.addAttribute("redirectUrl", request.getParameter("redirectUrl"));
         }
+
         return "auth-success";
     }
 

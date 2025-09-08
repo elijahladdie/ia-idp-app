@@ -2,6 +2,7 @@ package com.ia.idp.service;
 
 import com.ia.idp.config.AppConfig;
 import com.ia.idp.dto.*;
+import com.ia.idp.entity.OAuthClient;
 import com.ia.idp.entity.RefreshToken;
 import com.ia.idp.entity.User;
 import com.ia.idp.exception.AuthenticationException;
@@ -11,6 +12,8 @@ import com.ia.idp.exception.UserAlreadyExistsException;
 import com.ia.idp.repository.OAuthClientRepository;
 import com.ia.idp.repository.RefreshTokenRepository;
 import com.ia.idp.repository.UserRepository;
+
+import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +62,7 @@ public class AuthenticationService {
         logger.info("Attempting to register user with email: {}", request.getEmail());
 
         // Validate client
-        // OAuthClient client = validateClient(request.getClientId());
+        OAuthClient client = validateClient(request.getClientId());
 
         // Check if user already exists
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -78,14 +81,14 @@ public class AuthenticationService {
             user.setEmailVerified(false);
             
             logger.info("Generated email verification token for user: {}", request.getEmail());
+            logger.info("env email verification token for user: {}", request.getEmail());
+
         } else {
             user.setEmailVerified(true);
         }
 
         user = userRepository.save(user);
         logger.info("User registered successfully with ID: {} (email_verified: {})", user.getId(), user.getEmailVerified());
-
-        // Send verification email TO the registration email address
         if (appConfig.isEmailVerificationRequired() && !user.getEmailVerified()) {
             try {
                 emailService.sendVerificationEmail(user);
@@ -95,9 +98,6 @@ public class AuthenticationService {
                 // Don't fail registration if email sending fails
             }
         }
-
-        // For standard registration: return tokens with limited access until verified
-        // This allows the user to receive the tokens but with emailVerified=false status
         return generateAuthResponse(user);
     }
 
@@ -105,7 +105,9 @@ public class AuthenticationService {
         logger.info("Attempting to login user with email: {}", request.getEmail());
 
         // Validate client
-        // OAuthClient client = validateClient(request.getClientId());
+        OAuthClient client = validateClient(request.getClientId());
+        
+        // we get app connected to this client and return the authorization
 
         // Find user by email
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
@@ -284,6 +286,24 @@ public class AuthenticationService {
         );
     }
 
+    /**
+     * Validates if a client exists and is active
+     * @param clientId The client ID to validate
+     * @return The OAuthClient if valid
+     * @throws AuthenticationException if client is not found or inactive
+     */
+    private OAuthClient validateClient(String clientId) {
+        if (clientId == null || clientId.isBlank()) {
+            throw new AuthenticationException("Client ID is required");
+        }
+
+        return oAuthClientRepository.findById(clientId)
+            .filter(OAuthClient::isActive)
+            .orElseThrow(() -> {
+                logger.warn("Client not found or inactive: {}", clientId);
+                return new AuthenticationException("Invalid client: " + clientId);
+            });
+    }
 
     private String generateSecureToken() {
         byte[] randomBytes = new byte[32];
