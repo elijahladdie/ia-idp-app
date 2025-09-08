@@ -195,13 +195,6 @@ EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app.jar"]
 ```
 
-## Monitoring
-
-### Health Check
-```bash
-curl http://localhost:8080/health
-```
-
 ### Logging
 Application logs include:
 - Authentication attempts and failures
@@ -223,19 +216,4 @@ Application logs include:
 - **JwtService** - JWT token operations and JWKS generation
 - **LinkedInService** - OAuth 2.0 integration with LinkedIn
 - **EmailService** - Email verification and notifications
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
-
-## Support
-
-For issues and questions, please create an issue in the project repository.
+- **Admin Console** - Admin has access to console to register app and get client id and client secret
