@@ -38,10 +38,8 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(session -> 
-                session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                       .maximumSessions(1)
-                       .maxSessionsPreventsLogin(false)
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
@@ -54,15 +52,16 @@ public class SecurityConfig {
                     "/login.html",
                     "/css/**",
                     "/js/**",
+                    "/favicon.ico",
                     "/admin/login",
-                    "/admin/register",
-                    "/favicon.ico"
+                    "/admin/register"
                 ).permitAll()
-                .requestMatchers("/ui/console/**").hasRole("ADMIN")
-                .requestMatchers("/admin/session/**").hasRole("ADMIN")
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/ui/console/**", "/admin/session/**", "/admin/**")
+                .hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
+    
+            // Custom exception handling for unauthorized requests
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException) -> {
                     if (request.getRequestURI().startsWith("/ui/console")) {
@@ -72,6 +71,8 @@ public class SecurityConfig {
                     }
                 })
             )
+    
+            // Logout configuration
             .logout(logout -> logout
                 .logoutUrl("/auth/logout")
                 .logoutSuccessUrl("/login.html?logout=true")
@@ -79,38 +80,24 @@ public class SecurityConfig {
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             );
-
+    
         return http.build();
     }
-
+    
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Parse allowed origins from comma-separated string
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        configuration.setAllowedOrigins(origins);
-        
-        // Parse allowed methods from comma-separated string
-        List<String> methods = Arrays.asList(allowedMethods.split(","));
-        configuration.setAllowedMethods(methods);
-        
-        // Set allowed headers
-        if ("*".equals(allowedHeaders)) {
-            configuration.addAllowedHeader("*");
-        } else {
-            List<String> headers = Arrays.asList(allowedHeaders.split(","));
-            configuration.setAllowedHeaders(headers);
-        }
-        
-        configuration.setAllowCredentials(allowCredentials);
-        configuration.setMaxAge(3600L); // 1 hour
-
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+    
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
+    
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);

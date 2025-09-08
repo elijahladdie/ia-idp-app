@@ -2,7 +2,6 @@ package com.ia.idp.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Null;
 
 public class LoginRequest {
 
@@ -13,12 +12,16 @@ public class LoginRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
+    @NotBlank(message = "Client ID is required")
+    private String clientId;
+
     // Constructors
     public LoginRequest() {}
 
-    public LoginRequest(String email, String password) {
+    public LoginRequest(String email, String password, String clientId) {
         this.email = email;
         this.password = password;
+        this.clientId = clientId;
     }
 
     // Getters and Setters
@@ -37,4 +40,13 @@ public class LoginRequest {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
 }
+

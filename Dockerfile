@@ -6,18 +6,15 @@
 # EXPOSE 8080
 # ENTRYPOINT ["java", "-jar", "app.jar"]
 
-FROM eclipse-temurin:17-jre
-# Set working directory
+
+FROM eclipse-temurin:17-jdk-alpine
+
+# Copy the JAR into the image
+COPY target/identity-provider-1.0.0.jar /app.jar
+
 WORKDIR /app
-
-# Copy the fat jar
-COPY target/identity-provider-1.0.0.jar app.jar
-
-# Copy optional environment variables
+COPY target/identity-provider-1.0.0.jar /app.jar
 COPY .env .env
-
-# Expose port
 EXPOSE 8080
-
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Set entrypoint
+ENTRYPOINT ["java","-jar","/app.jar"]

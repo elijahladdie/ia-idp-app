@@ -16,7 +16,15 @@ public class PageController {
         if (userObj instanceof User) {
             User user = (User) userObj;
             model.addAttribute("user", user);
+            
+            // ✅ Retrieve the originally stored URL
+            String redirectUrl = (String) request.getSession().getAttribute("redirectUrl");
+            model.addAttribute("redirectUrl", redirectUrl);
+            model.addAttribute("token", request.getSession().getAttribute("token"));
+            model.addAttribute("refreshToken", request.getSession().getAttribute("refreshToken")); 
+
         }
+
         return "auth-success";
     }
 
