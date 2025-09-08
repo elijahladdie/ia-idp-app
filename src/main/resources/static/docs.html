@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Console - Documentation</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/ui/console/" class="navbar-brand">IdP Admin Console</a>
+            <ul class="navbar-nav">
+                <li><a href="/ui/console/">Dashboard</a></li>
+                <li><a href="/ui/console/register.html">Register App</a></li>
+                <li><a href="/ui/console/clients.html">Manage Apps</a></li>
+                <li><a href="/ui/console/docs.html">Documentation</a></li>
+                <li><a href="/ui/console/config.html">Configuration</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Documentation</h1>
+            <p>Complete integration guide for developers using this Identity Provider.</p>
+        </div>
+
+        <div class="card">
+            <h2>Quick Start Guide</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div style="text-align: center; padding: 1.5rem; border: 2px solid #3498db; border-radius: 8px;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">1️⃣</div>
+                    <h3 style="color: #3498db;">Register Your App</h3>
+                    <p style="color: #7f8c8d; font-size: 0.9rem;">Create a new OAuth client in the admin console</p>
+                </div>
+                <div style="text-align: center; padding: 1.5rem; border: 2px solid #27ae60; border-radius: 8px;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">2️⃣</div>
+                    <h3 style="color: #27ae60;">Get Credentials</h3>
+                    <p style="color: #7f8c8d; font-size: 0.9rem;">Save your client ID and secret securely</p>
+                </div>
+                <div style="text-align: center; padding: 1.5rem; border: 2px solid #f39c12; border-radius: 8px;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">3️⃣</div>
+                    <h3 style="color: #f39c12;">Integrate</h3>
+                    <p style="color: #7f8c8d; font-size: 0.9rem;">Implement OAuth 2.0 flow in your application</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>OAuth 2.0 Flows</h2>
+            
+            <h3>Authorization Code Flow</h3>
+            <p>The most secure flow for web applications with server-side code. Recommended for most use cases.</p>
+            
+            <h4>Step 1: Authorization Request</h4>
+            <p>Redirect users to the authorization endpoint:</p>
+            <div class="code-block">
+                <pre>GET <span id="authEndpoint">[BASE_URL]</span>/oauth/authorize?
+  response_type=code&
+  client_id=YOUR_CLIENT_ID&
+  redirect_uri=YOUR_REDIRECT_URI&
+  scope=openid profile email&
+  state=RANDOM_STATE_VALUE</pre>
+            </div>
+
+            <h4>Step 2: Authorization Response</h4>
+            <p>After user consent, they'll be redirected back with an authorization code:</p>
+            <div class="code-block">
+                <pre>GET YOUR_REDIRECT_URI?
+  code=AUTHORIZATION_CODE&
+  state=RANDOM_STATE_VALUE</pre>
+            </div>
+
+            <h4>Step 3: Token Exchange</h4>
+            <p>Exchange the authorization code for tokens:</p>
+            <div class="code-block">
+                <pre>POST <span id="tokenEndpoint">[BASE_URL]</span>/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&
+code=AUTHORIZATION_CODE&
+redirect_uri=YOUR_REDIRECT_URI&
+client_id=YOUR_CLIENT_ID&
+client_secret=YOUR_CLIENT_SECRET</pre>
+            </div>
+
+            <h4>Step 4: Token Response</h4>
+            <p>You'll receive an access token and refresh token:</p>
+            <div class="code-block">
+                <pre>{
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer",
+  "expires_in": 900,
+  "refresh_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "scope": "openid profile email"
+}</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Token Refresh</h2>
+            <p>Use refresh tokens to obtain new access tokens without user interaction:</p>
+            
+            <h4>Refresh Request</h4>
+            <div class="code-block">
+                <pre>POST <span id="refreshEndpoint">[BASE_URL]</span>/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&
+refresh_token=YOUR_REFRESH_TOKEN&
+client_id=YOUR_CLIENT_ID&
+client_secret=YOUR_CLIENT_SECRET</pre>
+            </div>
+
+            <h4>Refresh Response</h4>
+            <div class="code-block">
+                <pre>{
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer",
+  "expires_in": 900,
+  "refresh_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "scope": "openid profile email"
+}</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Client Credentials Flow</h2>
+            <p>For server-to-server authentication without user involvement:</p>
+            
+            <div class="code-block">
+                <pre>POST <span id="clientCredentialsEndpoint">[BASE_URL]</span>/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&
+client_id=YOUR_CLIENT_ID&
+client_secret=YOUR_CLIENT_SECRET&
+scope=YOUR_REQUESTED_SCOPES</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>JWT Token Verification</h2>
+            <p>All access tokens are JWT tokens signed with RSA-256. Verify them using our JWKS endpoint:</p>
+            
+            <h4>JWKS Endpoint</h4>
+            <div class="code-block">
+                <pre>GET <span id="jwksEndpoint">[BASE_URL]</span>/.well-known/jwks.json</pre>
+            </div>
+
+            <h4>Sample JWKS Response</h4>
+            <div class="code-block">
+                <pre>{
+  "keys": [
+    {
+      "kty": "RSA",
+      "use": "sig",
+      "kid": "key-id-1",
+      "n": "public-key-modulus...",
+      "e": "AQAB"
+    }
+  ]
+}</pre>
+            </div>
+
+            <h4>Token Validation Steps</h4>
+            <ol style="padding-left: 1.5rem;">
+                <li>Fetch the JWKS from the endpoint above</li>
+                <li>Verify the JWT signature using the appropriate public key</li>
+                <li>Validate the token claims (iss, aud, exp, etc.)</li>
+                <li>Extract user information from the token payload</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h2>Code Examples</h2>
+            
+            <h3>cURL Examples</h3>
+            <h4>Authorization Code Flow</h4>
+            <div class="code-block">
+                <pre># Step 1: Get authorization code (open in browser)
+# <span id="curlAuthUrl">[BASE_URL]</span>/oauth/authorize?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=openid profile email&state=xyz
+
+# Step 2: Exchange code for tokens
+curl -X POST <span id="curlTokenUrl">[BASE_URL]</span>/oauth/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=authorization_code" \
+  -d "code=AUTHORIZATION_CODE" \
+  -d "redirect_uri=YOUR_REDIRECT_URI" \
+  -d "client_id=YOUR_CLIENT_ID" \
+  -d "client_secret=YOUR_CLIENT_SECRET"</pre>
+            </div>
+
+            <h4>Refresh Token</h4>
+            <div class="code-block">
+                <pre>curl -X POST <span id="curlRefreshUrl">[BASE_URL]</span>/oauth/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=refresh_token" \
+  -d "refresh_token=YOUR_REFRESH_TOKEN" \
+  -d "client_id=YOUR_CLIENT_ID" \
+  -d "client_secret=YOUR_CLIENT_SECRET"</pre>
+            </div>
+
+            <h4>Client Credentials</h4>
+            <div class="code-block">
+                <pre>curl -X POST <span id="curlClientCredUrl">[BASE_URL]</span>/oauth/token \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials" \
+  -d "client_id=YOUR_CLIENT_ID" \
+  -d "client_secret=YOUR_CLIENT_SECRET" \
+  -d "scope=read write"</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>JavaScript Example</h2>
+            <div class="code-block">
+                <pre>// OAuth 2.0 Authorization Code Flow with PKCE
+class OAuth2Client {
+  constructor(clientId, redirectUri, baseUrl) {
+    this.clientId = clientId;
+    this.redirectUri = redirectUri;
+    this.baseUrl = baseUrl;
+  }
+
+  // Generate code verifier and challenge for PKCE
+  generatePKCE() {
+    const codeVerifier = this.base64URLEncode(crypto.getRandomValues(new Uint8Array(32)));
+    const codeChallenge = this.base64URLEncode(
+      new Uint8Array(crypto.subtle.digestSync('SHA-256', new TextEncoder().encode(codeVerifier)))
+    );
+    return { codeVerifier, codeChallenge };
+  }
+
+  // Start authorization flow
+  authorize(scopes = ['openid', 'profile', 'email']) {
+    const { codeVerifier, codeChallenge } = this.generatePKCE();
+    const state = this.generateRandomString(32);
+    
+    // Store for later use
+    sessionStorage.setItem('oauth_code_verifier', codeVerifier);
+    sessionStorage.setItem('oauth_state', state);
+    
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: this.clientId,
+      redirect_uri: this.redirectUri,
+      scope: scopes.join(' '),
+      state: state,
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256'
+    });
+    
+    window.location.href = `${this.baseUrl}/oauth/authorize?${params}`;
+  }
+
+  // Exchange authorization code for tokens
+  async exchangeCodeForTokens(code, state) {
+    const storedState = sessionStorage.getItem('oauth_state');
+    const codeVerifier = sessionStorage.getItem('oauth_code_verifier');
+    
+    if (state !== storedState) {
+      throw new Error('Invalid state parameter');
+    }
+    
+    const response = await fetch(`${this.baseUrl}/oauth/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: this.redirectUri,
+        client_id: this.clientId,
+        code_verifier: codeVerifier
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Token exchange failed');
+    }
+    
+    const tokens = await response.json();
+    
+    // Clean up
+    sessionStorage.removeItem('oauth_state');
+    sessionStorage.removeItem('oauth_code_verifier');
+    
+    return tokens;
+  }
+
+  base64URLEncode(buffer) {
+    return btoa(String.fromCharCode(...buffer))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+  }
+
+  generateRandomString(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+}
+
+// Usage
+const client = new OAuth2Client('your-client-id', 'https://yourapp.com/callback', '<span id="jsBaseUrl">[BASE_URL]</span>');
+
+// Start authorization
+client.authorize(['openid', 'profile', 'email']);
+
+// Handle callback (in your redirect URI handler)
+const urlParams = new URLSearchParams(window.location.search);
+const code = urlParams.get('code');
+const state = urlParams.get('state');
+
+if (code && state) {
+  client.exchangeCodeForTokens(code, state)
+    .then(tokens => {
+      console.log('Access token:', tokens.access_token);
+      console.log('Refresh token:', tokens.refresh_token);
+    })
+    .catch(error => {
+      console.error('Token exchange failed:', error);
+    });
+}</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Available Scopes</h2>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Scope</th>
+                            <th>Description</th>
+                            <th>Claims Included</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>openid</code></td>
+                            <td>Required for OpenID Connect. Enables ID token issuance.</td>
+                            <td>sub, iss, aud, exp, iat</td>
+                        </tr>
+                        <tr>
+                            <td><code>profile</code></td>
+                            <td>Access to user's profile information.</td>
+                            <td>name, given_name, family_name, picture</td>
+                        </tr>
+                        <tr>
+                            <td><code>email</code></td>
+                            <td>Access to user's email address.</td>
+                            <td>email, email_verified</td>
+                        </tr>
+                        <tr>
+                            <td><code>read</code></td>
+                            <td>Read access to protected resources.</td>
+                            <td>Custom application claims</td>
+                        </tr>
+                        <tr>
+                            <td><code>write</code></td>
+                            <td>Write access to protected resources.</td>
+                            <td>Custom application claims</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Error Handling</h2>
+            <p>Common error responses and how to handle them:</p>
+            
+            <h4>Authorization Errors</h4>
+            <div class="code-block">
+                <pre>GET YOUR_REDIRECT_URI?
+  error=access_denied&
+  error_description=The user denied the request&
+  state=RANDOM_STATE_VALUE</pre>
+            </div>
+
+            <h4>Token Errors</h4>
+            <div class="code-block">
+                <pre>{
+  "error": "invalid_grant",
+  "error_description": "The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client."
+}</pre>
+            </div>
+
+            <h4>Common Error Codes</h4>
+            <ul style="list-style-type: none; padding: 0;">
+                <li style="padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;"><code>invalid_request</code> - Missing or invalid parameters</li>
+                <li style="padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;"><code>invalid_client</code> - Client authentication failed</li>
+                <li style="padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;"><code>invalid_grant</code> - Authorization grant is invalid</li>
+                <li style="padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;"><code>unauthorized_client</code> - Client not authorized for this grant type</li>
+                <li style="padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;"><code>unsupported_grant_type</code> - Grant type not supported</li>
+                <li style="padding: 0.5rem 0;"><code>invalid_scope</code> - Requested scope is invalid</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Security Best Practices</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                <div class="alert alert-info">
+                    <strong>Use HTTPS</strong><br>
+                    Always use HTTPS for all OAuth endpoints and redirect URIs in production.
+                </div>
+                <div class="alert alert-warning">
+                    <strong>Validate State</strong><br>
+                    Always validate the state parameter to prevent CSRF attacks.
+                </div>
+                <div class="alert alert-info">
+                    <strong>Secure Storage</strong><br>
+                    Store client secrets and refresh tokens securely on the server side.
+                </div>
+                <div class="alert alert-warning">
+                    <strong>Token Expiry</strong><br>
+                    Handle token expiry gracefully and refresh tokens when needed.
+                </div>
+                <div class="alert alert-info">
+                    <strong>Scope Limitation</strong><br>
+                    Request only the minimum scopes required for your application.
+                </div>
+                <div class="alert alert-warning">
+                    <strong>PKCE for SPAs</strong><br>
+                    Use PKCE (Proof Key for Code Exchange) for single-page applications.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Update all base URL placeholders with current origin
+            const baseUrl = window.location.origin;
+            const placeholders = document.querySelectorAll('[id$="Endpoint"], [id$="Url"]');
+            
+            placeholders.forEach(element => {
+                element.textContent = baseUrl;
+            });
+        });
+    </script>
+</body>
+</html>

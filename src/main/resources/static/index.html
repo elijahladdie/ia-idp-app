@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Console - Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/ui/console/" class="navbar-brand">IdP Admin Console</a>
+            <ul class="navbar-nav">
+                <li><a href="/ui/console/">Dashboard</a></li>
+                <li><a href="/ui/console/register.html">Register App</a></li>
+                <li><a href="/ui/console/clients.html">Manage Apps</a></li>
+                <li><a href="/ui/console/docs.html">Documentation</a></li>
+                <li><a href="/ui/console/config.html">Configuration</a></li>
+            </ul>
+            <div class="navbar-user">
+                <span class="user-name">Loading...</span>
+                <span class="user-email"></span>
+                <a href="/auth/logout" class="btn btn-sm btn-secondary">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Admin Console – Dashboard</h1>
+            <p>Manage OAuth clients, configure your Identity Provider, and view integration documentation here.</p>
+        </div>
+
+        <div class="card">
+            <h2>Quick Actions</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                <div style="text-align: center; padding: 1.5rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: border-color 0.3s;">
+                    <h3 style="color: #3498db; margin-bottom: 1rem;">Register New App</h3>
+                    <p style="margin-bottom: 1.5rem; color: #7f8c8d;">Create a new OAuth 2.0 client application</p>
+                    <a href="/ui/console/register.html" class="btn btn-primary">Register App</a>
+                </div>
+                
+                <div style="text-align: center; padding: 1.5rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: border-color 0.3s;">
+                    <h3 style="color: #27ae60; margin-bottom: 1rem;">Manage Apps</h3>
+                    <p style="margin-bottom: 1.5rem; color: #7f8c8d;">View and manage existing OAuth clients</p>
+                    <a href="/ui/console/clients.html" class="btn btn-success">Manage Apps</a>
+                </div>
+                
+                <div style="text-align: center; padding: 1.5rem; border: 2px solid #e0e0e0; border-radius: 8px; transition: border-color 0.3s;">
+                    <h3 style="color: #f39c12; margin-bottom: 1rem;">Documentation</h3>
+                    <p style="margin-bottom: 1.5rem; color: #7f8c8d;">Integration guides and API documentation</p>
+                    <a href="/ui/console/docs.html" class="btn btn-secondary">View Docs</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>System Overview</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div style="text-align: center; padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #3498db;" id="totalClients">-</div>
+                    <div style="color: #7f8c8d; font-size: 0.9rem;">Total Clients</div>
+                </div>
+                
+                <div style="text-align: center; padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #27ae60;" id="activeClients">-</div>
+                    <div style="color: #7f8c8d; font-size: 0.9rem;">Active Clients</div>
+                </div>
+                
+                <div style="text-align: center; padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #e74c3c;" id="inactiveClients">-</div>
+                    <div style="color: #7f8c8d; font-size: 0.9rem;">Inactive Clients</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Recent Activity</h2>
+            <div id="recentActivity">
+                <p style="color: #7f8c8d; text-align: center; padding: 2rem;">Loading recent activity...</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>System Information</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <h3>Supported OAuth 2.0 Flows</h3>
+                    <ul style="list-style-type: none; padding: 0;">
+                        <li style="padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;">
+                            <strong>Authorization Code</strong> - Standard web application flow
+                        </li>
+                        <li style="padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;">
+                            <strong>Refresh Token</strong> - Token renewal without re-authentication
+                        </li>
+                        <li style="padding: 0.5rem 0;">
+                            <strong>Client Credentials</strong> - Server-to-server authentication
+                        </li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Key Endpoints</h3>
+                    <ul style="list-style-type: none; padding: 0;">
+                        <li style="padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;">
+                            <code>/oauth/authorize</code> - Authorization endpoint
+                        </li>
+                        <li style="padding: 0.5rem 0; border-bottom: 1px solid #ecf0f1;">
+                            <code>/oauth/token</code> - Token endpoint
+                        </li>
+                        <li style="padding: 0.5rem 0;">
+                            <code>/.well-known/jwks.json</code> - JWKS endpoint
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        // Dashboard-specific functionality
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadDashboardStats();
+            await loadRecentActivity();
+        });
+
+        async function loadDashboardStats() {
+            try {
+                const clients = await window.adminConsole.getClients();
+                const totalClients = clients.length;
+                const activeClients = clients.filter(client => client.active).length;
+                const inactiveClients = totalClients - activeClients;
+
+                document.getElementById('totalClients').textContent = totalClients;
+                document.getElementById('activeClients').textContent = activeClients;
+                document.getElementById('inactiveClients').textContent = inactiveClients;
+            } catch (error) {
+                console.error('Failed to load dashboard stats:', error);
+                document.getElementById('totalClients').textContent = '?';
+                document.getElementById('activeClients').textContent = '?';
+                document.getElementById('inactiveClients').textContent = '?';
+            }
+        }
+
+        async function loadRecentActivity() {
+            try {
+                const clients = await window.adminConsole.getClients();
+                const recentClients = clients
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0, 5);
+
+                const activityContainer = document.getElementById('recentActivity');
+                
+                if (recentClients.length === 0) {
+                    activityContainer.innerHTML = '<p style="color: #7f8c8d; text-align: center; padding: 2rem;">No recent activity</p>';
+                    return;
+                }
+
+                activityContainer.innerHTML = `
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Client Name</th>
+                                    <th>Client ID</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${recentClients.map(client => `
+                                    <tr>
+                                        <td>${client.clientName || 'Unnamed Client'}</td>
+                                        <td><code>${client.clientId}</code></td>
+                                        <td>
+                                            <span class="badge ${client.active ? 'badge-success' : 'badge-danger'}">
+                                                ${client.active ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
+                                        <td>${window.adminConsole.formatDate(client.createdAt)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load recent activity:', error);
+                document.getElementById('recentActivity').innerHTML = 
+                    '<p style="color: #e74c3c; text-align: center; padding: 2rem;">Failed to load recent activity</p>';
+            }
+        }
+    </script>
+</body>
+</html>

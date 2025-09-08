@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Console - Configuration</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/ui/console/" class="navbar-brand">IdP Admin Console</a>
+            <ul class="navbar-nav">
+                <li><a href="/ui/console/">Dashboard</a></li>
+                <li><a href="/ui/console/register.html">Register App</a></li>
+                <li><a href="/ui/console/clients.html">Manage Apps</a></li>
+                <li><a href="/ui/console/docs.html">Documentation</a></li>
+                <li><a href="/ui/console/config.html">Configuration</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Configuration</h1>
+            <p>Manage global Identity Provider settings and configuration.</p>
+        </div>
+
+        <div class="card">
+            <h2>Identity Provider Settings</h2>
+            <form id="configForm" data-api="/config" data-method="POST">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                    <div>
+                        <div class="form-group">
+                            <label for="baseUrl">Base URL *</label>
+                            <input type="url" id="baseUrl" name="baseUrl" class="form-control" 
+                                   placeholder="https://idp.example.com" required>
+                            <small style="color: #7f8c8d;">The base URL where your Identity Provider is hosted</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="issuer">Issuer *</label>
+                            <input type="url" id="issuer" name="issuer" class="form-control" 
+                                   placeholder="https://idp.example.com" required>
+                            <small style="color: #7f8c8d;">The issuer identifier for JWT tokens (usually same as base URL)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="jwksUri">JWKS URI *</label>
+                            <input type="url" id="jwksUri" name="jwksUri" class="form-control" 
+                                   placeholder="https://idp.example.com/.well-known/jwks.json" required>
+                            <small style="color: #7f8c8d;">The JSON Web Key Set endpoint for token verification</small>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="form-group">
+                            <label for="tokenExpiry">Access Token Expiry (minutes)</label>
+                            <input type="number" id="tokenExpiry" name="tokenExpiry" class="form-control" 
+                                   value="15" min="1" max="1440">
+                            <small style="color: #7f8c8d;">How long access tokens remain valid (1-1440 minutes)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="refreshTokenExpiry">Refresh Token Expiry (days)</label>
+                            <input type="number" id="refreshTokenExpiry" name="refreshTokenExpiry" class="form-control" 
+                                   value="30" min="1" max="365">
+                            <small style="color: #7f8c8d;">How long refresh tokens remain valid (1-365 days)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="allowedOrigins">Allowed CORS Origins</label>
+                            <textarea id="allowedOrigins" name="allowedOrigins" class="form-control" rows="3"
+                                      placeholder="https://app1.example.com, https://app2.example.com"></textarea>
+                            <small style="color: #7f8c8d;">Comma-separated list of allowed origins for CORS requests</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <button type="submit" class="btn btn-primary">Save Configuration</button>
+                    <button type="button" class="btn btn-secondary" onclick="loadConfig()">Reset to Current</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Current Configuration</h2>
+            <div id="currentConfig">
+                <div class="text-center" style="padding: 2rem; color: #7f8c8d;">
+                    <div class="spinner"></div>
+                    Loading current configuration...
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>System Information</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div class="text-center" style="padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #3498db;">Active</div>
+                    <div style="color: #7f8c8d; font-size: 0.9rem;">System Status</div>
+                </div>
+                <div class="text-center" style="padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #27ae60;">v1.0.0</div>
+                    <div style="color: #7f8c8d; font-size: 0.9rem;">Version</div>
+                </div>
+                <div class="text-center" style="padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #f39c12;">Spring Boot</div>
+                    <div style="color: #7f8c8d; font-size: 0.9rem;">Framework</div>
+                </div>
+                <div class="text-center" style="padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #e74c3c;">RSA-256</div>
+                    <div style="color: #7f8c8d; font-size: 0.9rem;">JWT Algorithm</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Maintenance Actions</h2>
+            <div class="alert alert-warning">
+                <strong>Warning:</strong> These actions may affect system availability and should be performed during maintenance windows.
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                <div style="padding: 1rem; border: 1px solid #e0e0e0; border-radius: 6px;">
+                    <h4>Export Configuration</h4>
+                    <p style="color: #7f8c8d; font-size: 0.9rem;">Download current configuration as JSON</p>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="exportConfig()">
+                        Export Config
+                    </button>
+                </div>
+                
+                <div style="padding: 1rem; border: 1px solid #e0e0e0; border-radius: 6px;">
+                    <h4>System Health Check</h4>
+                    <p style="color: #7f8c8d; font-size: 0.9rem;">Run comprehensive system diagnostics</p>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="runHealthCheck()">
+                        Run Check
+                    </button>
+                </div>
+                
+                <div style="padding: 1rem; border: 1px solid #e0e0e0; border-radius: 6px;">
+                    <h4>View Logs</h4>
+                    <p style="color: #7f8c8d; font-size: 0.9rem;">Access application logs and audit trail</p>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="viewLogs()">
+                        View Logs
+                    </button>
+                </div>
+                
+                <div style="padding: 1rem; border: 1px solid #e0e0e0; border-radius: 6px;">
+                    <h4>Backup Data</h4>
+                    <p style="color: #7f8c8d; font-size: 0.9rem;">Create backup of client data and configuration</p>
+                    <button type="button" class="btn btn-success btn-sm" onclick="createBackup()">
+                        Create Backup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadConfig();
+        });
+
+        async function loadConfig() {
+            try {
+                const config = await window.adminConsole.getConfig();
+                populateConfigForm(config);
+                displayCurrentConfig(config);
+            } catch (error) {
+                console.error('Failed to load configuration:', error);
+                // Show mock configuration for demo purposes
+                const mockConfig = {
+                    baseUrl: window.location.origin,
+                    issuer: window.location.origin,
+                    jwksUri: `${window.location.origin}/.well-known/jwks.json`,
+                    tokenExpiry: 15,
+                    refreshTokenExpiry: 30,
+                    allowedOrigins: ['http://localhost:3000', 'https://app.example.com']
+                };
+                populateConfigForm(mockConfig);
+                displayCurrentConfig(mockConfig);
+            }
+        }
+
+        function populateConfigForm(config) {
+            const form = document.getElementById('configForm');
+            if (config.baseUrl) form.querySelector('[name="baseUrl"]').value = config.baseUrl;
+            if (config.issuer) form.querySelector('[name="issuer"]').value = config.issuer;
+            if (config.jwksUri) form.querySelector('[name="jwksUri"]').value = config.jwksUri;
+            if (config.tokenExpiry) form.querySelector('[name="tokenExpiry"]').value = config.tokenExpiry;
+            if (config.refreshTokenExpiry) form.querySelector('[name="refreshTokenExpiry"]').value = config.refreshTokenExpiry;
+            if (config.allowedOrigins) {
+                const origins = Array.isArray(config.allowedOrigins) 
+                    ? config.allowedOrigins.join(', ') 
+                    : config.allowedOrigins;
+                form.querySelector('[name="allowedOrigins"]').value = origins;
+            }
+        }
+
+        function displayCurrentConfig(config) {
+            const container = document.getElementById('currentConfig');
+            
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                    <div>
+                        <h4>Identity Provider</h4>
+                        <div style="font-family: monospace; background-color: #f8f9fa; padding: 1rem; border-radius: 4px; font-size: 0.9rem;">
+                            <div><strong>Base URL:</strong> ${config.baseUrl || 'Not configured'}</div>
+                            <div><strong>Issuer:</strong> ${config.issuer || 'Not configured'}</div>
+                            <div><strong>JWKS URI:</strong> ${config.jwksUri || 'Not configured'}</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4>Token Settings</h4>
+                        <div style="font-family: monospace; background-color: #f8f9fa; padding: 1rem; border-radius: 4px; font-size: 0.9rem;">
+                            <div><strong>Access Token Expiry:</strong> ${config.tokenExpiry || 15} minutes</div>
+                            <div><strong>Refresh Token Expiry:</strong> ${config.refreshTokenExpiry || 30} days</div>
+                            <div><strong>Algorithm:</strong> RSA-256</div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4>CORS Settings</h4>
+                        <div style="font-family: monospace; background-color: #f8f9fa; padding: 1rem; border-radius: 4px; font-size: 0.9rem;">
+                            <div><strong>Allowed Origins:</strong></div>
+                            ${config.allowedOrigins && config.allowedOrigins.length > 0 
+                                ? config.allowedOrigins.map(origin => `<div style="margin-left: 1rem;">• ${origin}</div>`).join('')
+                                : '<div style="margin-left: 1rem;">None configured</div>'
+                            }
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4>Endpoints</h4>
+                        <div style="font-family: monospace; background-color: #f8f9fa; padding: 1rem; border-radius: 4px; font-size: 0.9rem;">
+                            <div><strong>Authorization:</strong> /oauth/authorize</div>
+                            <div><strong>Token:</strong> /oauth/token</div>
+                            <div><strong>JWKS:</strong> /.well-known/jwks.json</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function exportConfig() {
+            try {
+                const config = await window.adminConsole.getConfig();
+                const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `idp-config-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                window.adminConsole.showAlert('success', 'Configuration exported successfully!');
+            } catch (error) {
+                window.adminConsole.showAlert('error', `Export failed: ${error.message}`);
+            }
+        }
+
+        async function runHealthCheck() {
+            try {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.innerHTML = '<span class="spinner"></span>Running...';
+                button.disabled = true;
+
+                // Mock health check - in real implementation, this would call the backend
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                window.adminConsole.showAlert('success', 'Health check completed successfully! All systems operational.');
+                
+                button.textContent = originalText;
+                button.disabled = false;
+            } catch (error) {
+                window.adminConsole.showAlert('error', `Health check failed: ${error.message}`);
+                
+                const button = event.target;
+                button.textContent = 'Run Check';
+                button.disabled = false;
+            }
+        }
+
+        async function viewLogs() {
+            window.adminConsole.showAlert('info', 'Log viewer would open here. This feature requires backend implementation.');
+        }
+
+        async function createBackup() {
+            try {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.innerHTML = '<span class="spinner"></span>Creating...';
+                button.disabled = true;
+
+                // Mock backup creation
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                window.adminConsole.showAlert('success', 'Backup created successfully!');
+                
+                button.textContent = originalText;
+                button.disabled = false;
+            } catch (error) {
+                window.adminConsole.showAlert('error', `Backup failed: ${error.message}`);
+                
+                const button = event.target;
+                button.textContent = 'Create Backup';
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

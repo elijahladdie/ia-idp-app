@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Console - Manage Apps</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/ui/console/" class="navbar-brand">IdP Admin Console</a>
+            <ul class="navbar-nav">
+                <li><a href="/ui/console/">Dashboard</a></li>
+                <li><a href="/ui/console/register.html">Register App</a></li>
+                <li><a href="/ui/console/clients.html">Manage Apps</a></li>
+                <li><a href="/ui/console/docs.html">Documentation</a></li>
+                <li><a href="/ui/console/config.html">Configuration</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Manage Apps</h1>
+            <p>View and manage all registered OAuth 2.0 client applications.</p>
+        </div>
+
+        <div class="card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Registered Applications</h2>
+                <a href="/ui/console/register.html" class="btn btn-primary">Register New App</a>
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="searchInput" class="form-control" 
+                       placeholder="Search by client name or ID..." 
+                       style="max-width: 300px;">
+            </div>
+
+            <div class="table-container">
+                <table class="table" id="clientsTable">
+                    <thead>
+                        <tr>
+                            <th>Client ID</th>
+                            <th>Client Name</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="5" class="text-center">
+                                <div class="spinner"></div>
+                                Loading applications...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="emptyState" class="hidden text-center" style="padding: 3rem;">
+                <div style="font-size: 3rem; color: #bdc3c7; margin-bottom: 1rem;">📱</div>
+                <h3 style="color: #7f8c8d; margin-bottom: 1rem;">No Applications Found</h3>
+                <p style="color: #95a5a6; margin-bottom: 2rem;">Get started by registering your first OAuth 2.0 client application.</p>
+                <a href="/ui/console/register.html" class="btn btn-primary">Register Your First App</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Bulk Actions</h2>
+            <div class="d-flex gap-2 align-items-center">
+                <select id="bulkAction" class="form-control" style="max-width: 200px;">
+                    <option value="">Select action...</option>
+                    <option value="activate">Activate Selected</option>
+                    <option value="deactivate">Deactivate Selected</option>
+                    <option value="delete">Delete Selected</option>
+                </select>
+                <button type="button" id="applyBulkAction" class="btn btn-secondary" disabled>
+                    Apply to Selected
+                </button>
+                <span id="selectedCount" class="text-muted" style="margin-left: 1rem;">0 selected</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Quick Stats</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                <div class="text-center" style="padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #3498db;" id="totalApps">0</div>
+                    <div style="color: #7f8c8d; font-size: 0.9rem;">Total Apps</div>
+                </div>
+                <div class="text-center" style="padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #27ae60;" id="activeApps">0</div>
+                    <div style="color: #7f8c8d; font-size: 0.9rem;">Active</div>
+                </div>
+                <div class="text-center" style="padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #e74c3c;" id="inactiveApps">0</div>
+                    <div style="color: #7f8c8d; font-size: 0.9rem;">Inactive</div>
+                </div>
+                <div class="text-center" style="padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #f39c12;" id="recentApps">0</div>
+                    <div style="color: #7f8c8d; font-size: 0.9rem;">This Week</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        let allClients = [];
+        let selectedClients = new Set();
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadClients();
+            setupEventListeners();
+        });
+
+        async function loadClients() {
+            try {
+                allClients = await window.adminConsole.getClients();
+                renderClients(allClients);
+                updateStats(allClients);
+            } catch (error) {
+                console.error('Failed to load clients:', error);
+                showError('Failed to load applications. Please try again.');
+            }
+        }
+
+        function renderClients(clients) {
+            const tbody = document.querySelector('#clientsTable tbody');
+            const emptyState = document.getElementById('emptyState');
+            const table = document.getElementById('clientsTable');
+
+            if (!clients || clients.length === 0) {
+                table.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            table.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+
+            tbody.innerHTML = clients.map(client => `
+                <tr data-client-id="${client.clientId}">
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="checkbox" class="client-checkbox" value="${client.clientId}">
+                            <code>${client.clientId}</code>
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <strong>${client.clientName || 'Unnamed Client'}</strong>
+                            ${client.description ? `<br><small style="color: #7f8c8d;">${window.adminConsole.truncateText(client.description, 60)}</small>` : ''}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge ${client.active ? 'badge-success' : 'badge-danger'}">
+                            ${client.active ? 'Active' : 'Inactive'}
+                        </span>
+                    </td>
+                    <td>${window.adminConsole.formatDate(client.createdAt)}</td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="/ui/console/client.html?id=${client.clientId}" class="btn btn-primary btn-sm">View</a>
+                            <button type="button" class="btn btn-secondary btn-sm" 
+                                    onclick="toggleClientStatus('${client.clientId}', ${!client.active})">
+                                ${client.active ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" 
+                                    data-action="delete" 
+                                    data-endpoint="/clients/${client.clientId}"
+                                    data-confirm="Are you sure you want to delete '${client.clientName || client.clientId}'?">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Re-setup event listeners for new buttons
+            window.adminConsole.setupEventListeners();
+            setupCheckboxListeners();
+        }
+
+        function updateStats(clients) {
+            const total = clients.length;
+            const active = clients.filter(c => c.active).length;
+            const inactive = total - active;
+            
+            // Calculate recent apps (created in last 7 days)
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            const recent = clients.filter(c => new Date(c.createdAt) > oneWeekAgo).length;
+
+            document.getElementById('totalApps').textContent = total;
+            document.getElementById('activeApps').textContent = active;
+            document.getElementById('inactiveApps').textContent = inactive;
+            document.getElementById('recentApps').textContent = recent;
+        }
+
+        function setupEventListeners() {
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const filteredClients = allClients.filter(client => 
+                    (client.clientName || '').toLowerCase().includes(query) ||
+                    client.clientId.toLowerCase().includes(query)
+                );
+                renderClients(filteredClients);
+            });
+
+            // Bulk actions
+            const bulkActionSelect = document.getElementById('bulkAction');
+            const applyBulkButton = document.getElementById('applyBulkAction');
+            
+            applyBulkButton.addEventListener('click', async () => {
+                const action = bulkActionSelect.value;
+                if (!action || selectedClients.size === 0) return;
+                
+                const clientIds = Array.from(selectedClients);
+                const confirmMessage = `Are you sure you want to ${action} ${clientIds.length} client(s)?`;
+                
+                if (!confirm(confirmMessage)) return;
+                
+                try {
+                    await performBulkAction(action, clientIds);
+                    await loadClients();
+                    selectedClients.clear();
+                    updateSelectedCount();
+                } catch (error) {
+                    window.adminConsole.showAlert('error', `Bulk action failed: ${error.message}`);
+                }
+            });
+        }
+
+        function setupCheckboxListeners() {
+            const checkboxes = document.querySelectorAll('.client-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const clientId = e.target.value;
+                    if (e.target.checked) {
+                        selectedClients.add(clientId);
+                    } else {
+                        selectedClients.delete(clientId);
+                    }
+                    updateSelectedCount();
+                });
+            });
+        }
+
+        function updateSelectedCount() {
+            const count = selectedClients.size;
+            document.getElementById('selectedCount').textContent = `${count} selected`;
+            document.getElementById('applyBulkAction').disabled = count === 0;
+        }
+
+        async function toggleClientStatus(clientId, newStatus) {
+            try {
+                await window.adminConsole.updateClient(clientId, { active: newStatus });
+                window.adminConsole.showAlert('success', `Client ${newStatus ? 'activated' : 'deactivated'} successfully!`);
+                await loadClients();
+            } catch (error) {
+                window.adminConsole.showAlert('error', `Failed to update client: ${error.message}`);
+            }
+        }
+
+        async function performBulkAction(action, clientIds) {
+            const promises = clientIds.map(clientId => {
+                switch (action) {
+                    case 'activate':
+                        return window.adminConsole.updateClient(clientId, { active: true });
+                    case 'deactivate':
+                        return window.adminConsole.updateClient(clientId, { active: false });
+                    case 'delete':
+                        return window.adminConsole.deleteClient(clientId);
+                    default:
+                        throw new Error(`Unknown action: ${action}`);
+                }
+            });
+            
+            await Promise.all(promises);
+        }
+
+        function showError(message) {
+            const tbody = document.querySelector('#clientsTable tbody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center" style="color: #e74c3c; padding: 2rem;">
+                        <div style="margin-bottom: 1rem;">⚠️</div>
+                        ${message}
+                        <br><br>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="loadClients()">
+                            Try Again
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+    </script>
+</body>
+</html>

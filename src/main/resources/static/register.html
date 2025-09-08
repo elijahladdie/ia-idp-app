@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Console - Register New App</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/ui/console/" class="navbar-brand">IdP Admin Console</a>
+            <ul class="navbar-nav">
+                <li><a href="/ui/console/">Dashboard</a></li>
+                <li><a href="/ui/console/register.html">Register App</a></li>
+                <li><a href="/ui/console/clients.html">Manage Apps</a></li>
+                <li><a href="/ui/console/docs.html">Documentation</a></li>
+                <li><a href="/ui/console/config.html">Configuration</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Register New App</h1>
+            <p>Create a new OAuth 2.0 client application to integrate with your Identity Provider.</p>
+        </div>
+
+        <div id="clientCredentials" class="hidden"></div>
+
+        <div class="card">
+            <h2>Application Details</h2>
+            <form id="registerForm" data-api="/clients" data-method="POST">
+                <div class="form-group">
+                    <label for="clientName">App Name *</label>
+                    <input type="text" id="clientName" name="clientName" class="form-control" 
+                           placeholder="My Application" required>
+                    <small style="color: #7f8c8d;">A descriptive name for your application</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="redirectUris">Redirect URIs</label>
+                    <textarea id="redirectUris" name="redirectUris" class="form-control" 
+                              placeholder="https://example.com/callback, https://app.example.com/auth" rows="3"></textarea>
+                    <small style="color: #7f8c8d;">Comma-separated list of allowed redirect URIs for OAuth flows. Leave empty if not using authorization code flow.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="grantTypes">Grant Types *</label>
+                    <input type="text" id="grantTypes" name="grantTypes" class="form-control" 
+                           value="AUTHORIZATION_CODE, REFRESH_TOKEN" required>
+                    <small style="color: #7f8c8d;">Comma-separated list of OAuth 2.0 grant types. Common values: AUTHORIZATION_CODE, REFRESH_TOKEN, CLIENT_CREDENTIALS</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="scopes">Scopes</label>
+                    <input type="text" id="scopes" name="scopes" class="form-control" 
+                           placeholder="read, write, profile" value="openid, profile, email">
+                    <small style="color: #7f8c8d;">Comma-separated list of OAuth 2.0 scopes your application will request</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" class="form-control" 
+                              placeholder="Brief description of your application" rows="3"></textarea>
+                    <small style="color: #7f8c8d;">Optional description to help identify this application</small>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <button type="submit" class="btn btn-primary">Register App</button>
+                    <a href="/ui/console/clients.html" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Grant Types Reference</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                <div style="padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <h3 style="color: #3498db; margin-bottom: 0.5rem;">AUTHORIZATION_CODE</h3>
+                    <p style="margin-bottom: 0.5rem; font-size: 0.9rem;">Standard OAuth 2.0 flow for web applications with server-side code.</p>
+                    <strong style="font-size: 0.85rem; color: #7f8c8d;">Best for: Web applications, mobile apps</strong>
+                </div>
+                
+                <div style="padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <h3 style="color: #27ae60; margin-bottom: 0.5rem;">REFRESH_TOKEN</h3>
+                    <p style="margin-bottom: 0.5rem; font-size: 0.9rem;">Allows applications to obtain new access tokens without user re-authentication.</p>
+                    <strong style="font-size: 0.85rem; color: #7f8c8d;">Best for: Long-running applications</strong>
+                </div>
+                
+                <div style="padding: 1rem; background-color: #f8f9fa; border-radius: 6px;">
+                    <h3 style="color: #f39c12; margin-bottom: 0.5rem;">CLIENT_CREDENTIALS</h3>
+                    <p style="margin-bottom: 0.5rem; font-size: 0.9rem;">Server-to-server authentication without user involvement.</p>
+                    <strong style="font-size: 0.85rem; color: #7f8c8d;">Best for: API services, background jobs</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Security Best Practices</h2>
+            <ul style="list-style-type: none; padding: 0;">
+                <li style="padding: 0.75rem 0; border-bottom: 1px solid #ecf0f1; display: flex; align-items: flex-start;">
+                    <span style="color: #27ae60; margin-right: 0.5rem; font-weight: bold;">✓</span>
+                    <div>
+                        <strong>Use HTTPS only</strong> - All redirect URIs must use HTTPS in production
+                    </div>
+                </li>
+                <li style="padding: 0.75rem 0; border-bottom: 1px solid #ecf0f1; display: flex; align-items: flex-start;">
+                    <span style="color: #27ae60; margin-right: 0.5rem; font-weight: bold;">✓</span>
+                    <div>
+                        <strong>Store client secret securely</strong> - Never expose client secrets in client-side code
+                    </div>
+                </li>
+                <li style="padding: 0.75rem 0; border-bottom: 1px solid #ecf0f1; display: flex; align-items: flex-start;">
+                    <span style="color: #27ae60; margin-right: 0.5rem; font-weight: bold;">✓</span>
+                    <div>
+                        <strong>Validate redirect URIs</strong> - Only register exact URIs you control
+                    </div>
+                </li>
+                <li style="padding: 0.75rem 0; display: flex; align-items: flex-start;">
+                    <span style="color: #27ae60; margin-right: 0.5rem; font-weight: bold;">✓</span>
+                    <div>
+                        <strong>Use appropriate scopes</strong> - Request only the minimum permissions needed
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

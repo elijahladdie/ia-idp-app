@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Error - IA Identity Provider</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        .error-icon {
+            color: #ef4444;
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+        p {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .error-details {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #991b1b;
+        }
+        .retry-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+            margin-right: 1rem;
+        }
+        .retry-btn:hover {
+            background: #2563eb;
+        }
+        .close-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+        .close-btn:hover {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-icon">✗</div>
+        <h1>Authentication Failed</h1>
+        <p>We encountered an error during the authentication process. Please try again.</p>
+        
+        <div class="error-details" id="errorDetails" style="display: none;">
+            <strong>Error:</strong> <span id="errorMessage"></span>
+        </div>
+        
+        <div>
+            <button class="retry-btn" onclick="retryAuth()">Try Again</button>
+            <button class="close-btn" onclick="closeWindow()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Extract error from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorMessage = urlParams.get('message');
+        
+        if (errorMessage) {
+            document.getElementById('errorDetails').style.display = 'block';
+            document.getElementById('errorMessage').textContent = decodeURIComponent(errorMessage);
+            
+            // Notify parent window if opened in popup
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'OAUTH_ERROR',
+                    error: errorMessage
+                }, '*');
+            }
+        }
+        
+        function retryAuth() {
+            // Go back to start the auth flow again
+            window.location.href = '/auth/linkedin?client_id=test-client-id';
+        }
+        
+        function closeWindow() {
+            if (window.opener) {
+                window.close();
+            } else {
+                window.history.back();
+            }
+        }
+    </script>
+</body>
+</html>

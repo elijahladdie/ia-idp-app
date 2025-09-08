@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to IA Identity Provider</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+        .success-icon {
+            color: #22c55e;
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .linkedin-icon {
+            color: #0077b5;
+            font-size: 2rem;
+            margin-right: 0.5rem;
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+        .welcome-subtitle {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        .user-info {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+        .user-info h3 {
+            color: #1f2937;
+            margin: 0 0 1rem 0;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #374151;
+        }
+        .info-value {
+            color: #6b7280;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .provider-badge {
+            background: #0077b5;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .verified-badge {
+            background: #22c55e;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .features {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+        .features h4 {
+            color: #0369a1;
+            margin: 0 0 1rem 0;
+            text-align: center;
+        }
+        .features ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .features li {
+            padding: 0.5rem 0;
+            color: #0c4a6e;
+        }
+        .features li:before {
+            content: "✓";
+            color: #22c55e;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        .footer-note {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✓</div>
+        <h1>Welcome to IA Identity Provider!</h1>
+        <p class="welcome-subtitle">
+            <span class="linkedin-icon">💼</span>
+            You have successfully authenticated using your LinkedIn account
+        </p>
+        
+        <div class="user-info">
+            <h3>Your Account Information</h3>
+            <div class="info-row">
+                <span class="info-label">Full Name:</span>
+                <span class="info-value" th:text="${user.firstName + ' ' + user.lastName}">John Doe</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email Address:</span>
+                <span class="info-value" th:text="${user.email}">john.doe@example.com</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Authentication Provider:</span>
+                <span class="provider-badge" th:text="${user.provider}">LINKEDIN</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email Verification:</span>
+                <span class="verified-badge" th:if="${user.emailVerified}">✓ Verified</span>
+                <span class="info-value" th:unless="${user.emailVerified}">Pending Verification</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Account Created:</span>
+                <span class="info-value" th:text="${#temporals.format(user.createdAt, 'MMM dd, yyyy HH:mm')}">Jan 01, 2024 12:00</span>
+            </div>
+        </div>
+
+        <div class="features">
+            <h4>What you can do with IA Identity Provider:</h4>
+            <ul>
+                <li>Single Sign-On (SSO) across all IA applications</li>
+                <li>Secure JWT-based authentication</li>
+                <li>LinkedIn profile integration</li>
+                <li>Token refresh and session management</li>
+                <li>Multi-device logout capabilities</li>
+                <li>Email verification and security features</li>
+            </ul>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="continueToApp()">Continue to Application</button>
+            <button class="btn btn-secondary" onclick="closeWindow()">Close Window</button>
+        </div>
+
+        <div class="footer-note">
+            Your authentication tokens have been securely generated and are ready for use.
+            <br>
+            Session expires in <span th:text="${tokenExpiryMinutes}">15</span> minutes.
+        </div>
+    </div>
+
+    <script>
+        function continueToApp() {
+            // Redirect to main application or dashboard
+            window.location.href = '/dashboard';
+        }
+        
+        function closeWindow() {
+            if (window.opener) {
+                // Post success message to parent window for SPA integration
+                window.opener.postMessage({
+                    type: 'OAUTH_SUCCESS',
+                    user: {
+                        name: '[[${user.firstName}]] [[${user.lastName}]]',
+                        email: '[[${user.email}]]',
+                        provider: '[[${user.provider}]]',
+                        verified: '[[${user.emailVerified}]]'
+                    }
+                }, '*');
+                window.close();
+            } else {
+                window.history.back();
+            }
+        }
+        
+        // Auto-redirect after 30 seconds if not in popup
+        if (!window.opener) {
+            setTimeout(() => {
+                continueToApp();
+            }, 30000);
+        }
+    </script>
+</body>
+</html>

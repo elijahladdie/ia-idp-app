@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Console - Client Details</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/ui/console/" class="navbar-brand">IdP Admin Console</a>
+            <ul class="navbar-nav">
+                <li><a href="/ui/console/">Dashboard</a></li>
+                <li><a href="/ui/console/register.html">Register App</a></li>
+                <li><a href="/ui/console/clients.html">Manage Apps</a></li>
+                <li><a href="/ui/console/docs.html">Documentation</a></li>
+                <li><a href="/ui/console/config.html">Configuration</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1>Client Details</h1>
+                    <p>View and manage OAuth 2.0 client application details.</p>
+                </div>
+                <a href="/ui/console/clients.html" class="btn btn-secondary">← Back to Apps</a>
+            </div>
+        </div>
+
+        <div id="loadingState">
+            <div class="card text-center">
+                <div class="spinner"></div>
+                Loading client details...
+            </div>
+        </div>
+
+        <div id="errorState" class="hidden">
+            <div class="card text-center">
+                <div style="font-size: 3rem; color: #e74c3c; margin-bottom: 1rem;">⚠️</div>
+                <h3 style="color: #e74c3c;">Client Not Found</h3>
+                <p style="color: #7f8c8d; margin-bottom: 2rem;">The requested client could not be found or you don't have permission to view it.</p>
+                <a href="/ui/console/clients.html" class="btn btn-primary">Back to Apps</a>
+            </div>
+        </div>
+
+        <div id="clientContent" class="hidden">
+            <div id="clientDetails"></div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const clientId = window.adminConsole.getUrlParameter('id');
+            if (!clientId) {
+                showErrorState();
+                return;
+            }
+            
+            await loadClientDetails(clientId);
+        });
+
+        async function loadClientDetails(clientId) {
+            try {
+                const client = await window.adminConsole.getClient(clientId);
+                showClientContent(client);
+            } catch (error) {
+                console.error('Failed to load client details:', error);
+                showErrorState();
+            }
+        }
+
+        function showClientContent(client) {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('clientContent').classList.remove('hidden');
+            
+            // Update page title
+            document.title = `Admin Console - ${client.clientName || client.clientId}`;
+            
+            renderClientDetails(client);
+        }
+
+        function showErrorState() {
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('clientContent').classList.add('hidden');
+            document.getElementById('errorState').classList.remove('hidden');
+        }
+
+        function renderClientDetails(client) {
+            const container = document.getElementById('clientDetails');
+            
+            container.innerHTML = `
+                <div class="card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2>${client.clientName || 'Unnamed Client'}</h2>
+                            <p style="color: #7f8c8d; margin: 0;">Client ID: <code>${client.clientId}</code></p>
+                        </div>
+                        <span class="badge ${client.active ? 'badge-success' : 'badge-danger'}" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                            ${client.active ? 'Active' : 'Inactive'}
+                        </span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                        <div>
+                            <h3>Basic Information</h3>
+                            <div class="form-group">
+                                <label>Client Name:</label>
+                                <div style="padding: 0.5rem 0; font-weight: 500;">${client.clientName || 'Not specified'}</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Description:</label>
+                                <div style="padding: 0.5rem 0;">${client.description || 'No description provided'}</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Created:</label>
+                                <div style="padding: 0.5rem 0;">${window.adminConsole.formatDate(client.createdAt)}</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Updated:</label>
+                                <div style="padding: 0.5rem 0;">${window.adminConsole.formatDate(client.updatedAt)}</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>OAuth Configuration</h3>
+                            <div class="form-group">
+                                <label>Grant Types:</label>
+                                <div style="padding: 0.5rem 0;">
+                                    ${client.grantTypes && client.grantTypes.length > 0 
+                                        ? client.grantTypes.map(type => `<span class="badge badge-success" style="margin-right: 0.5rem;">${type}</span>`).join('')
+                                        : 'None specified'
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Scopes:</label>
+                                <div style="padding: 0.5rem 0;">
+                                    ${client.scopes && client.scopes.length > 0 
+                                        ? client.scopes.map(scope => `<span class="badge badge-success" style="margin-right: 0.5rem;">${scope}</span>`).join('')
+                                        : 'Default scopes'
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Redirect URIs:</label>
+                                <div style="padding: 0.5rem 0;">
+                                    ${client.redirectUris && client.redirectUris.length > 0 
+                                        ? client.redirectUris.map(uri => `<div style="margin-bottom: 0.25rem;"><code>${uri}</code></div>`).join('')
+                                        : 'None specified'
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="button" class="btn btn-primary" onclick="toggleEditMode()">
+                            <span id="editButtonText">Edit Client</span>
+                        </button>
+                        <button type="button" class="btn ${client.active ? 'btn-secondary' : 'btn-success'}" 
+                                onclick="toggleClientStatus('${client.clientId}', ${!client.active})">
+                            ${client.active ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button type="button" class="btn btn-danger" 
+                                onclick="deleteClient('${client.clientId}', '${client.clientName || client.clientId}')">
+                            Delete Client
+                        </button>
+                    </div>
+                </div>
+
+                <div id="editForm" class="card hidden">
+                    <h3>Edit Client</h3>
+                    <form data-api="/clients/${client.clientId}" data-method="PUT" data-editing="true">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                            <div>
+                                <div class="form-group">
+                                    <label for="clientName">Client Name *</label>
+                                    <input type="text" id="clientName" name="clientName" class="form-control" 
+                                           value="${client.clientName || ''}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="description">Description</label>
+                                    <textarea id="description" name="description" class="form-control" rows="3"
+                                              placeholder="Brief description of your application">${client.description || ''}</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="active">Status</label>
+                                    <select id="active" name="active" class="form-control">
+                                        <option value="true" ${client.active ? 'selected' : ''}>Active</option>
+                                        <option value="false" ${!client.active ? 'selected' : ''}>Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="form-group">
+                                    <label for="redirectUris">Redirect URIs</label>
+                                    <textarea id="redirectUris" name="redirectUris" class="form-control" rows="3"
+                                              placeholder="https://example.com/callback, https://app.example.com/auth">${client.redirectUris ? client.redirectUris.join(', ') : ''}</textarea>
+                                    <small style="color: #7f8c8d;">Comma-separated list of allowed redirect URIs</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="grantTypes">Grant Types *</label>
+                                    <input type="text" id="grantTypes" name="grantTypes" class="form-control" 
+                                           value="${client.grantTypes ? client.grantTypes.join(', ') : ''}" required>
+                                    <small style="color: #7f8c8d;">Comma-separated list (e.g., AUTHORIZATION_CODE, REFRESH_TOKEN)</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="scopes">Scopes</label>
+                                    <input type="text" id="scopes" name="scopes" class="form-control" 
+                                           value="${client.scopes ? client.scopes.join(', ') : ''}"
+                                           placeholder="openid, profile, email">
+                                    <small style="color: #7f8c8d;">Comma-separated list of OAuth 2.0 scopes</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2 mt-3">
+                            <button type="submit" class="btn btn-success">Save Changes</button>
+                            <button type="button" class="btn btn-secondary" onclick="toggleEditMode()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3>Integration Information</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <div>
+                            <h4>Authorization Endpoint</h4>
+                            <div class="code-block">
+                                <pre>GET ${window.location.origin}/oauth/authorize?
+  response_type=code&
+  client_id=${client.clientId}&
+  redirect_uri=YOUR_REDIRECT_URI&
+  scope=openid profile email&
+  state=RANDOM_STATE</pre>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4>Token Endpoint</h4>
+                            <div class="code-block">
+                                <pre>POST ${window.location.origin}/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&
+code=AUTHORIZATION_CODE&
+redirect_uri=YOUR_REDIRECT_URI&
+client_id=${client.clientId}&
+client_secret=YOUR_CLIENT_SECRET</pre>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h4>JWKS Endpoint</h4>
+                        <div class="code-block">
+                            <pre>GET ${window.location.origin}/.well-known/jwks.json</pre>
+                        </div>
+                        <p style="margin-top: 1rem; color: #7f8c8d; font-size: 0.9rem;">
+                            Use this endpoint to retrieve the public keys for verifying JWT tokens issued by this Identity Provider.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Security Recommendations</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                        <div class="alert alert-info">
+                            <strong>HTTPS Only</strong><br>
+                            Always use HTTPS for redirect URIs in production environments.
+                        </div>
+                        <div class="alert alert-warning">
+                            <strong>Client Secret</strong><br>
+                            Keep your client secret secure and never expose it in client-side code.
+                        </div>
+                        <div class="alert alert-info">
+                            <strong>State Parameter</strong><br>
+                            Always use the state parameter to prevent CSRF attacks.
+                        </div>
+                        <div class="alert alert-warning">
+                            <strong>Token Validation</strong><br>
+                            Verify JWT tokens using the JWKS endpoint before trusting claims.
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Re-setup event listeners for the form
+            window.adminConsole.setupEventListeners();
+        }
+
+        function toggleEditMode() {
+            const details = document.getElementById('clientDetails').querySelector('.card');
+            const editForm = document.getElementById('editForm');
+            const editButton = document.getElementById('editButtonText');
+            
+            if (editForm.classList.contains('hidden')) {
+                editForm.classList.remove('hidden');
+                editButton.textContent = 'Cancel Edit';
+                editForm.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                editForm.classList.add('hidden');
+                editButton.textContent = 'Edit Client';
+            }
+        }
+
+        async function toggleClientStatus(clientId, newStatus) {
+            try {
+                await window.adminConsole.updateClient(clientId, { active: newStatus });
+                window.adminConsole.showAlert('success', `Client ${newStatus ? 'activated' : 'deactivated'} successfully!`);
+                // Reload the page to reflect changes
+                setTimeout(() => window.location.reload(), 1000);
+            } catch (error) {
+                window.adminConsole.showAlert('error', `Failed to update client: ${error.message}`);
+            }
+        }
+
+        async function deleteClient(clientId, clientName) {
+            const confirmMessage = `Are you sure you want to delete "${clientName}"?\n\nThis action cannot be undone and will immediately revoke all tokens issued to this client.`;
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            try {
+                await window.adminConsole.deleteClient(clientId);
+                window.adminConsole.showAlert('success', 'Client deleted successfully!');
+                // Redirect to clients list after a short delay
+                setTimeout(() => {
+                    window.location.href = '/ui/console/clients.html';
+                }, 1500);
+            } catch (error) {
+                window.adminConsole.showAlert('error', `Failed to delete client: ${error.message}`);
+            }
+        }
+
+        // Override the form success handler to reload client details
+        const originalHandleFormSuccess = window.adminConsole.handleFormSuccess;
+        window.adminConsole.handleFormSuccess = function(form, response) {
+            originalHandleFormSuccess.call(this, form, response);
+            
+            if (form.dataset.editing) {
+                // Reload client details after successful edit
+                setTimeout(async () => {
+                    const clientId = window.adminConsole.getUrlParameter('id');
+                    if (clientId) {
+                        const client = await window.adminConsole.getClient(clientId);
+                        renderClientDetails(client);
+                        toggleEditMode(); // Hide edit form
+                    }
+                }, 1000);
+            }
+        };
+    </script>
+</body>
+</html>
