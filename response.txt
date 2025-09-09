@@ -1,3 +1,6 @@
 {"user_email":"admin@test.com","user_first_name":"Admin","user_provider":"LOCAL","user_id":2,"user_last_name":"User","user_name":"Admin User","user_email_verified":false,"login_timestamp":1757246423617}
 Client ID: client_3bea7cfb84984e159c1f9d15dcdc3bf9
 Client Secret: ZGM529LqMGs41A9QQcYxHHZEkqGe4sF8S5PvydXOMzM
+docker tag idp-service:latest elijahladdie/idp-service:latest
+docker push elijahladdie/idp-service:latest
+docker build -t elijahladdie/idp-service:latest . && docker push elijahladdie/idp-service:latest

@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Console - Login</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
     <div class="container" style="max-width: 400px; margin-top: 5rem;">
         <div class="card">
@@ -17,29 +19,30 @@
             <div id="errorMessage" class="alert alert-error hidden"></div>
             <div id="successMessage" class="alert alert-success hidden"></div>
 
-            <form id="loginForm" method="post" action="/admin/login">
+            <form id="loginForm" method="post" action="/admin/login" onsubmit="return handleLoginSubmit(event)">
                 <div class="form-group">
                     <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" class="form-control" 
-                           placeholder="Enter your email" required>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email"
+                        required>
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" class="form-control" 
-                           placeholder="Enter your password" required>
+                    <input type="password" id="password" name="password" class="form-control"
+                        placeholder="Enter your password" required>
                 </div>
 
                 <div class="form-group">
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        Sign In
+                    <button type="submit" class="btn btn-primary" id="loginButton" style="width: 100%;">
+                        <span id="loginButtonText">Sign In</span>
+                        <span id="loginSpinner" class="spinner hidden"></span>
                     </button>
                 </div>
             </form>
 
             <div class="text-center mt-3">
                 <p style="color: #7f8c8d; font-size: 0.9rem;">
-                    Don't have an admin account? 
+                    Don't have an admin account?
                     <a href="#" onclick="toggleRegisterForm()" style="color: #3498db;">Register as Admin</a>
                 </p>
             </div>
@@ -52,29 +55,30 @@
                 <p style="color: #7f8c8d;">Create a new admin account to access the console</p>
             </div>
 
-            <form id="adminRegisterForm" method="post" action="/admin/register">
+            <div id="registerError" class="alert alert-error hidden"></div>
+            <form id="adminRegisterForm" onsubmit="return handleRegisterSubmit(event)">
                 <div class="form-group">
                     <label for="regEmail">Email Address</label>
-                    <input type="email" id="regEmail" name="email" class="form-control" 
-                           placeholder="Enter your email" required>
+                    <input type="email" id="regEmail" name="email" class="form-control" placeholder="Enter your email"
+                        required>
                 </div>
 
                 <div class="form-group">
                     <label for="regFirstName">First Name</label>
-                    <input type="text" id="regFirstName" name="firstName" class="form-control" 
-                           placeholder="Enter your first name" required>
+                    <input type="text" id="regFirstName" name="firstName" class="form-control"
+                        placeholder="Enter your first name" required>
                 </div>
 
                 <div class="form-group">
                     <label for="regLastName">Last Name</label>
-                    <input type="text" id="regLastName" name="lastName" class="form-control" 
-                           placeholder="Enter your last name" required>
+                    <input type="text" id="regLastName" name="lastName" class="form-control"
+                        placeholder="Enter your last name" required>
                 </div>
 
                 <div class="form-group">
                     <label for="regPassword">Password</label>
-                    <input type="password" id="regPassword" name="password" class="form-control" 
-                           placeholder="Enter your password" required minlength="8">
+                    <input type="password" id="regPassword" name="password" class="form-control"
+                        placeholder="Enter your password" required minlength="8">
                     <small style="color: #7f8c8d; font-size: 0.8rem;">
                         Password must be at least 8 characters long
                     </small>
@@ -82,13 +86,14 @@
 
                 <div class="form-group">
                     <label for="regConfirmPassword">Confirm Password</label>
-                    <input type="password" id="regConfirmPassword" name="confirmPassword" class="form-control" 
-                           placeholder="Confirm your password" required>
+                    <input type="password" id="regConfirmPassword" name="confirmPassword" class="form-control"
+                        placeholder="Confirm your password" required>
                 </div>
 
                 <div class="form-group">
-                    <button type="submit" class="btn btn-success" style="width: 100%;">
-                        Register Admin Account
+                    <button type="submit" class="btn btn-success" id="registerButton" style="width: 100%;">
+                        <span id="registerButtonText">Register Admin Account</span>
+                        <span id="registerSpinner" class="spinner hidden"></span>
                     </button>
                 </div>
 
@@ -103,11 +108,11 @@
         <div id="registerInfo" class="card hidden mt-3">
             <h3>Need an Account?</h3>
             <p style="color: #7f8c8d; margin-bottom: 1rem;">
-                Admin console access is restricted to authorized personnel only. 
+                Admin console access is restricted to authorized personnel only.
                 Contact your system administrator to request access.
             </p>
             <p style="color: #7f8c8d; font-size: 0.9rem;">
-                <strong>For developers:</strong> You can register a user account using the 
+                <strong>For developers:</strong> You can register a user account using the
                 <code>POST /auth/register</code> API endpoint, then use those credentials to access the admin console.
             </p>
         </div>
@@ -117,65 +122,159 @@
         // Handle URL parameters for error/success messages
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            
+
             if (urlParams.get('error')) {
                 showError('Invalid email or password. Please try again.');
             }
-            
+
             if (urlParams.get('logout')) {
                 showSuccess('You have been successfully logged out.');
             }
-            
+
             if (urlParams.get('expired')) {
                 showError('Your session has expired. Please log in again.');
             }
-            
+
             if (urlParams.get('registered')) {
                 showSuccess('Admin account registered successfully! You can now sign in.');
             }
-            
+
             if (urlParams.get('error') === 'registration_failed') {
                 showError('Registration failed. Please try again or contact support.');
             }
-            
+
             if (urlParams.get('error') === 'insufficient_privileges') {
                 showError('Access denied. Admin privileges required.');
             }
         });
 
-        // Handle form submission with loading state
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
+        // Handle form submission with loading state and validation
+        function handleLoginSubmit(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                showError('Please fill in all fields');
+                return false;
+            }
+
             showLoading();
-            // Let the form submit normally to /admin/login
-        });
+
+            // Submit the form programmatically
+            const form = document.getElementById('loginForm');
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'text/html'
+                }
+            })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        return response.text().then(html => {
+                            // This handles cases where the server returns an error page
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            const errorMessage = doc.querySelector('.error-message')?.textContent || 'Login failed. Please try again.';
+                            throw new Error(errorMessage);
+                        });
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    showError(error.message || 'Login failed. Please try again.');
+                });
+
+            return false;
+        }
 
         // Handle admin registration form submission
-        document.getElementById('adminRegisterForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            
+        function handleRegisterSubmit(event) {
+            console.log("Registering admin...");
+            console.log(event);
+            // console.log(event.preventDefault());
+
+            event.preventDefault();
+
+            const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
-            
+            const firstName = document.getElementById('regFirstName').value.trim();
+            const lastName = document.getElementById('regLastName').value.trim();
+
+            // Validation
+            if (!email || !password || !confirmPassword || !firstName || !lastName) {
+                showRegisterError('Please fill in all fields');
+                return false;
+            }
+
             if (password !== confirmPassword) {
-                showError('Passwords do not match. Please try again.');
-                return;
+                showRegisterError('Passwords do not match. Please try again.');
+                return false;
             }
-            
+
             if (password.length < 8) {
-                showError('Password must be at least 8 characters long.');
-                return;
+                showRegisterError('Password must be at least 8 characters long.');
+                return false;
             }
-            
+
             showRegisterLoading();
-            
-            // Submit the form
-            e.target.submit();
-        });
+
+            // Submit the form via fetch
+            const formData = new URLSearchParams();
+            formData.append("email", email);
+            formData.append("password", password);
+            formData.append("confirmPassword", confirmPassword);
+            formData.append("firstName", firstName);
+            formData.append("lastName", lastName);
+
+            fetch('/admin/register', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        return response.text().then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            const errorMessage = doc.querySelector('.error-message')?.textContent || 'Registration failed. Please try again.';
+                            throw new Error(errorMessage);
+                        });
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    console.error(error);
+                    showRegisterError(error.message || 'Registration failed. Please try again.');
+                });
+
+            return false;
+        }
+
+        function showRegisterError(message) {
+            const errorDiv = document.getElementById('registerError');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+
+            // Scroll to error message
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
 
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
             const successDiv = document.getElementById('successMessage');
-            
+
             successDiv.classList.add('hidden');
             errorDiv.textContent = message;
             errorDiv.classList.remove('hidden');
@@ -184,35 +283,46 @@
         function showSuccess(message) {
             const errorDiv = document.getElementById('errorMessage');
             const successDiv = document.getElementById('successMessage');
-            
+
             errorDiv.classList.add('hidden');
             successDiv.textContent = message;
             successDiv.classList.remove('hidden');
         }
 
         function showLoading() {
-            const submitBtn = document.querySelector('#loginForm button[type="submit"]');
-            submitBtn.innerHTML = '<span class="spinner"></span>Signing In...';
+            const submitBtn = document.getElementById('loginButton');
+            const spinner = document.getElementById('loginSpinner');
+            const buttonText = document.getElementById('loginButtonText');
+
+            buttonText.textContent = 'Signing In...';
+            spinner.classList.remove('hidden');
             submitBtn.disabled = true;
         }
 
         function showRegisterLoading() {
-            const submitBtn = document.querySelector('#adminRegisterForm button[type="submit"]');
-            submitBtn.innerHTML = '<span class="spinner"></span>Registering...';
+            const submitBtn = document.getElementById('registerButton');
+            const spinner = document.getElementById('registerSpinner');
+            const buttonText = document.getElementById('registerButtonText');
+
+            buttonText.textContent = 'Registering...';
+            spinner.classList.remove('hidden');
             submitBtn.disabled = true;
         }
 
         function hideLoading() {
-            const loginBtn = document.querySelector('#loginForm button[type="submit"]');
+            const loginBtn = document.getElementById('loginButton');
+            const loginSpinner = document.getElementById('loginSpinner');
+            const loginText = document.getElementById('loginButtonText');
             const registerBtn = document.querySelector('#adminRegisterForm button[type="submit"]');
-            
-            if (loginBtn) {
-                loginBtn.textContent = 'Sign In';
+
+            if (loginBtn && loginText) {
+                loginText.textContent = 'Sign In';
+                loginSpinner.classList.add('hidden');
                 loginBtn.disabled = false;
             }
-            
+
             if (registerBtn) {
-                registerBtn.textContent = 'Register Admin Account';
+                registerBtn.innerHTML = 'Register Admin Account';
                 registerBtn.disabled = false;
             }
         }
@@ -221,14 +331,18 @@
             const loginCard = document.querySelector('.card');
             const registerForm = document.getElementById('registerForm');
             const registerInfo = document.getElementById('registerInfo');
-            
+
+            // Clear any previous errors and form data
+            document.getElementById('registerError').classList.add('hidden');
+            document.getElementById('adminRegisterForm').reset();
+
             // Hide register info if visible
             registerInfo.classList.add('hidden');
-            
+
             // Toggle between login and register forms
             loginCard.classList.toggle('hidden');
             registerForm.classList.toggle('hidden');
-            
+
             // Clear any error messages
             document.getElementById('errorMessage').classList.add('hidden');
             document.getElementById('successMessage').classList.add('hidden');
@@ -240,4 +354,5 @@
         }
     </script>
 </body>
+
 </html>

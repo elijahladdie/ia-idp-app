@@ -24,14 +24,17 @@ public class RegisterRequest {
     @Size(max = 50, message = "Last name must not exceed 50 characters")
     private String lastName;
 
+    @NotBlank(message = "Client ID is required")
+    private String clientId;
     // Constructors
     public RegisterRequest() {}
 
-    public RegisterRequest(String email, String password, String firstName, String lastName) {
+    public RegisterRequest(String email, String password, String firstName, String lastName, String clientId) {
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.clientId = clientId;
     }
 
     // Getters and Setters
@@ -65,5 +68,12 @@ public class RegisterRequest {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 }

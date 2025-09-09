@@ -127,10 +127,6 @@ public class JwtService {
         Map<String, Object> jwks = new HashMap<>();
         Map<String, Object> key = new HashMap<>();
 
-        // Get the public key in the correct format
-        byte[] publicKeyBytes = publicKey.getEncoded();
-        String publicKeyBase64 = Base64.getEncoder().encodeToString(publicKeyBytes);
-
         key.put("kty", "RSA");
         key.put("use", "sig");
         key.put("kid", jwtConfig.getKeyId());
